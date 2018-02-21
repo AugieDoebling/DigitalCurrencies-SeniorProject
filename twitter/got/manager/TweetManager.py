@@ -81,7 +81,11 @@ class TweetManager:
 	
 	@staticmethod
 	def getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy):
-		url = "https://twitter.com/i/search/timeline?f=tweets&q=%s&src=typd&max_position=%s"
+		# english only
+		url = "https://twitter.com/i/search/timeline?f=tweets&q=%s&lang=en&src=typd&max_position=%s"
+
+		# all languages
+		# url = "https://twitter.com/i/search/timeline?f=tweets&q=%s&src=typd&max_position=%s"
 		
 		urlGetData = ''
 		
