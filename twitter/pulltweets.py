@@ -2,10 +2,10 @@ import got
 from datetime import datetime
 import peewee
 
-BUFFER_LENGTH = 5
+BUFFER_LENGTH = 100
 SINCE = "2018-01-01"
 UNTIL = "2018-01-02"
-MAX_TWEETS = 10
+MAX_TWEETS = None
 
 myDB = peewee.MySQLDatabase("seniorproject", host="seniorproject.cxbqypcd9gwp.us-east-2.rds.amazonaws.com", 
    port=3306, user="", passwd="")
@@ -32,9 +32,17 @@ def send_to_aws(tweet_array):
 
    print "Tweets: {} CurTime: {}\n    DateTime:{}".format(BUFFER_LENGTH, datetime.now(), tweet_array[BUFFER_LENGTH-1].date)
 
+def get_params():
+   max_n = raw_input("Max Tweets: ")
+   if max_n.isdigit():
+      MAX_TWEETS = int(max_n)
+
+   SINCE = raw_input("Since: (format 2018-07-10): ")
+   UNTIL = raw_input("Until: (format 2018-07-10): ")
 
 def main():
-   # WRITE BEGINNING INFO
+   get_params()
+
    print "Starting tweet download.\nBufferSize = {}\nStartTime = {}\n".format(BUFFER_LENGTH, datetime.now())
 
    tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin -giveaway -#freebitcoin').setSince(SINCE).setUntil(UNTIL)
