@@ -10,8 +10,13 @@ SINCE = "2018-01-01"
 UNTIL = "2018-01-02"
 MAX_TWEETS = None
 
+DB_USERNAME = ""
+DB_PASSWORD = ""
+EMAIL_PASSWORD = ""
+
+
 myDB = peewee.MySQLDatabase("seniorproject", host="seniorproject.cxbqypcd9gwp.us-east-2.rds.amazonaws.com", 
-   port=3306, user="", passwd="")
+   port=3306, user=DB_USERNAME, passwd=DB_PASSWORD)
 
 class Tweet(peewee.Model):
    id = peewee.BigIntegerField()
@@ -44,6 +49,9 @@ def get_params():
    UNTIL = raw_input("Until: (format 2018-07-10): ")
 
 def main():
+   if DB_USERNAME == "" or DB_PASSWORD == "" or EMAIL_PASSWORD == "":
+      print "PASSWORDS NOT INCLUDED"
+
    get_params()
 
    fromaddr = "augiesjunk263@gmail.com"
@@ -54,11 +62,13 @@ def main():
    msg['Subject'] = "Digital Currencies: PASSED"
    body = ""
 
-   print "Starting tweet download.\nBufferSize = {}\nStartTime = {}\n".format(BUFFER_LENGTH, datetime.now())
+   start_msg = "Starting tweet download.\nBufferSize = {}\nStartTime = {}\n".format(BUFFER_LENGTH, datetime.now())
+   print start_msg
+   body += start_msg
 
    tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin -giveaway -#freebitcoin').setSince(SINCE).setUntil(UNTIL)
-   if(MAX_TWEETS):
-      tweetCriteria.setMaxTweets(MAX_TWEETS)
+   # if(MAX_TWEETS):
+      # tweetCriteria = tweetCriteria.setMaxTweets(MAX_TWEETS)
    
    start = datetime.now()
    lap_time = datetime.now()
@@ -81,7 +91,7 @@ def main():
    msg.attach(MIMEText(body, 'plain'))
    server = smtplib.SMTP('smtp.gmail.com', 587)
    server.starttls()
-   server.login(fromaddr, "")
+   server.login(fromaddr, EMAIL_PASSWORD)
    text = msg.as_string()
    server.sendmail(fromaddr, toaddr, text)
    server.quit()
