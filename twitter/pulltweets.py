@@ -2,6 +2,8 @@ import got
 from datetime import datetime
 import peewee
 import smtplib
+import sys
+import traceback
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 
@@ -13,6 +15,11 @@ MAX_TWEETS = None
 DB_USERNAME = ""
 DB_PASSWORD = ""
 EMAIL_PASSWORD = ""
+
+with open("creds.txt", "r") as creds:
+   DB_USERNAME = creds.readline()[:-1]
+   DB_PASSWORD = creds.readline()[:-1]
+   EMAIL_PASSWORD = creds.readline()[:-1]
 
 
 myDB = peewee.MySQLDatabase("seniorproject", host="seniorproject.cxbqypcd9gwp.us-east-2.rds.amazonaws.com", 
@@ -38,12 +45,18 @@ def send_to_aws(tweet_array):
          favorites=t.favorites, retweets=t.retweets)
       pw_tweet.save()
 
-   print "Tweets: {} CurTime: {}\n    DateTime:{}".format(BUFFER_LENGTH, datetime.now(), tweet_array[BUFFER_LENGTH-1].date)
+   time = ""
+   try:
+      time = tweet_array[0].date 
+   except Exception as e:
+      pass
+
+   print "Tweets: {} CurTime: {}\n    DateTime:{}".format(BUFFER_LENGTH, datetime.now(), time)
 
 def get_params():
-   max_n = raw_input("Max Tweets: ")
-   if max_n.isdigit():
-      MAX_TWEETS = int(max_n)
+#    max_n = raw_input("Max Tweets: ")
+#    if max_n.isdigit():
+#       MAX_TWEETS = int(max_n)
 
    SINCE = raw_input("Since: (format 2018-07-10): ")
    UNTIL = raw_input("Until: (format 2018-07-10): ")
@@ -76,8 +89,10 @@ def main():
    try:
       got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer=send_to_aws, bufferLength=BUFFER_LENGTH)
    except Exception as e:
-      err_msg = "Error occured at {}\n{}".format(datetime.now(), e.message)
+      err_msg = "Error occured at {}\n".format(datetime.now())
       print err_msg
+      tb = sys.exc_info()[2]
+      traceback.print_tb(tb)
       msg['Subject'] = "Digital Currencies: ERROR"
       body = err_msg
       
