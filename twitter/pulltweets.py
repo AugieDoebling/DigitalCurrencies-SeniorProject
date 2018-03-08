@@ -1,6 +1,9 @@
 import got
 from datetime import datetime
 import peewee
+import smtplib
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
 
 BUFFER_LENGTH = 100
 SINCE = "2018-01-01"
@@ -43,6 +46,14 @@ def get_params():
 def main():
    get_params()
 
+   fromaddr = "augiesjunk263@gmail.com"
+   toaddr = "augustdoebling@gmail.com"
+   msg = MIMEMultipart()
+   msg['From'] = fromaddr
+   msg['To'] = toaddr
+   msg['Subject'] = "Digital Currencies: PASSED"
+   body = ""
+
    print "Starting tweet download.\nBufferSize = {}\nStartTime = {}\n".format(BUFFER_LENGTH, datetime.now())
 
    tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin -giveaway -#freebitcoin').setSince(SINCE).setUntil(UNTIL)
@@ -55,13 +66,25 @@ def main():
    try:
       got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer=send_to_aws, bufferLength=BUFFER_LENGTH)
    except Exception as e:
-      print "Error occured at {}".format(datetime.now())
-      print e.message
-
+      err_msg = "Error occured at {}\n{}".format(datetime.now(), e.message)
+      print err_msg
+      msg['Subject'] = "Digital Currencies: ERROR"
+      body = err_msg
+      
    end = datetime.now()
    myDB.close()
 
-   print "\nFinished. Recieved tweets in {}".format(end-start)
+   fin_msg = "\nFinished. Recieved tweets in {}".format(end-start)
+   print fin_msg
+   body += fin_msg
+
+   msg.attach(MIMEText(body, 'plain'))
+   server = smtplib.SMTP('smtp.gmail.com', 587)
+   server.starttls()
+   server.login(fromaddr, "")
+   text = msg.as_string()
+   server.sendmail(fromaddr, toaddr, text)
+   server.quit()
 
 
 if __name__ == '__main__':
