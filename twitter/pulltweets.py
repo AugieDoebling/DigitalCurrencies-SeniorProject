@@ -8,9 +8,6 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 
 BUFFER_LENGTH = 100
-SINCE = "2018-01-01"
-UNTIL = "2018-01-02"
-MAX_TWEETS = None
 
 DB_USERNAME = ""
 DB_PASSWORD = ""
@@ -45,27 +42,24 @@ def send_to_aws(tweet_array):
          favorites=t.favorites, retweets=t.retweets)
       pw_tweet.save()
 
-   time = ""
-   try:
-      time = tweet_array[0].date 
-   except Exception as e:
-      pass
-
-   print "Tweets: {} CurTime: {}\n    DateTime:{}".format(BUFFER_LENGTH, datetime.now(), time)
+   print "Tweets: {} CurTime: {}".format(BUFFER_LENGTH, datetime.now())
 
 def get_params():
-#    max_n = raw_input("Max Tweets: ")
-#    if max_n.isdigit():
-#       MAX_TWEETS = int(max_n)
+   max_n = raw_input("Max Tweets: ")
+   max_tweets = 0
+   if max_n.isdigit():
+      max_tweets = int(max_n)
 
-   SINCE = raw_input("Since: (format 2018-07-10): ")
-   UNTIL = raw_input("Until: (format 2018-07-10): ")
+   since = raw_input("Since: (format 2018-07-10): ")
+   until = raw_input("Until: (format 2018-07-10): ")
+
+   return (since, until, max_tweets)
 
 def main():
    if DB_USERNAME == "" or DB_PASSWORD == "" or EMAIL_PASSWORD == "":
       print "PASSWORDS NOT INCLUDED"
 
-   get_params()
+   since, until, max_tweets = get_params()
 
    fromaddr = "augiesjunk263@gmail.com"
    toaddr = "augustdoebling@gmail.com"
@@ -79,9 +73,9 @@ def main():
    print start_msg
    body += start_msg
 
-   tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin -giveaway -#freebitcoin').setSince(SINCE).setUntil(UNTIL)
-   # if(MAX_TWEETS):
-      # tweetCriteria = tweetCriteria.setMaxTweets(MAX_TWEETS)
+   tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin -giveaway -#freebitcoin').setSince(since).setUntil(until)
+   if(max_tweets != 0):
+      tweetCriteria = tweetCriteria.setMaxTweets(max_tweets)
    
    start = datetime.now()
    lap_time = datetime.now()
