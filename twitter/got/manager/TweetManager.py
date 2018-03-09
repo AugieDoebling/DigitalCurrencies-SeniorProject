@@ -22,8 +22,18 @@ class TweetManager:
 
 		while active:
 			json = TweetManager.getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy)
-			if len(json['items_html'].strip()) == 0:
-				break
+			# if len(json['items_html'].strip()) == 0:
+				# break
+
+			# attempt to make this resilient
+			attempts = 0
+			while(len(json['items_html'].strip()) == 0 and attempts < 5):
+				json = TweetManager.getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy)
+				attempts += 1
+
+			if attempts == 5:
+				print "exit point 1"
+				break;
 
 			refreshCursor = json['min_position']
 			scrapedTweets = PyQuery(json['items_html'])
@@ -31,9 +41,24 @@ class TweetManager:
 			scrapedTweets.remove('div.withheld-tweet')
 			tweets = scrapedTweets('div.js-stream-tweet')
 			
-			if len(tweets) == 0:
-				break
+			# if len(tweets) == 0:
+			# 	break
 			
+			attempts = 0
+			while(len(tweets) == 0 and attempts < 5):
+				refreshCursor = json['min_position']
+				scrapedTweets = PyQuery(json['items_html'])
+				#Remove incomplete tweets withheld by Twitter Guidelines
+				scrapedTweets.remove('div.withheld-tweet')
+				tweets = scrapedTweets('div.js-stream-tweet')
+
+				attempts += 1
+
+			if attempts == 5:
+				print "exit point 2"
+				break;
+
+
 			for tweetHTML in tweets:
 				tweetPQ = PyQuery(tweetHTML)
 				tweet = models.Tweet()
@@ -71,6 +96,7 @@ class TweetManager:
 				
 				if tweetCriteria.maxTweets > 0 and len(results) >= tweetCriteria.maxTweets:
 					active = False
+					print "exit point 3"
 					break
 					
 		
