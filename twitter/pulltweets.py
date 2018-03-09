@@ -87,8 +87,10 @@ def main():
    start = datetime.now()
    lap_time = datetime.now()
 
+   result_count = 0
+
    try:
-      got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer=send_to_aws, bufferLength=BUFFER_LENGTH)
+      result_count = got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer=send_to_aws, bufferLength=BUFFER_LENGTH)
       subject += "SUCCESS"
    except Exception as e:
       err_msg = "Error occured at {}\n".format(datetime.now())
@@ -101,7 +103,7 @@ def main():
    end = datetime.now()
    myDB.close()
 
-   fin_msg = "\nFinished. Recieved tweets in {}".format(end-start)
+   fin_msg = "\nFinished. Recieved tweets in {}\nDates : {} -> {}\nRecieved {} tweets".format(end-start, since, until, result_count)
    print fin_msg
    body += fin_msg
 

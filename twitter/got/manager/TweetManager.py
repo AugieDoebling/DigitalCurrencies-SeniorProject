@@ -11,7 +11,7 @@ class TweetManager:
 	def getTweets(tweetCriteria, receiveBuffer=None, bufferLength=100, proxy=None):
 		refreshCursor = ''
 	
-		results = []
+		result_count = 0
 		resultsAux = []
 		cookieJar = cookielib.CookieJar()
 		
@@ -87,14 +87,14 @@ class TweetManager:
 				tweet.hashtags = " ".join(re.compile('(#\\w*)').findall(tweet.text))
 				tweet.geo = geo
 				
-				results.append(tweet)
+				result_count += 1
 				resultsAux.append(tweet)
 				
 				if receiveBuffer and len(resultsAux) >= bufferLength:
 					receiveBuffer(resultsAux)
 					resultsAux = []
 				
-				if tweetCriteria.maxTweets > 0 and len(results) >= tweetCriteria.maxTweets:
+				if tweetCriteria.maxTweets > 0 and result_count >= tweetCriteria.maxTweets:
 					active = False
 					print "exit point 3"
 					break
@@ -103,7 +103,7 @@ class TweetManager:
 		if receiveBuffer and len(resultsAux) > 0:
 			receiveBuffer(resultsAux)
 		
-		return results
+		return result_count
 	
 	@staticmethod
 	def getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy):
