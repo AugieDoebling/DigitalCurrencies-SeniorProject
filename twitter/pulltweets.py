@@ -1,11 +1,9 @@
 import got
 from datetime import datetime
 import peewee
-import smtplib
+import requests
 import sys
 import traceback
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
 
 BUFFER_LENGTH = 100
 
@@ -55,18 +53,22 @@ def get_params():
 
    return (since, until, max_tweets)
 
+def send_email(subject, message):
+   recipient = "Augie Doebling <augustdoebling@gmail.com>"
+   return requests.post(
+      "https://api.mailgun.net/v3/sandbox1901f3bfd2e64cb9b1e4a3ea2525a8e2.mailgun.org/messages",
+      auth=("api", EMAIL_PASSWORD),
+      data={"from": "Mailgun Sandbox <postmaster@sandbox1901f3bfd2e64cb9b1e4a3ea2525a8e2.mailgun.org>",
+            "to": recipient,
+            "subject": subject,
+            "text": message})
+
 def main():
    if DB_USERNAME == "" or DB_PASSWORD == "" or EMAIL_PASSWORD == "":
       print "PASSWORDS NOT INCLUDED"
 
    since, until, max_tweets = get_params()
 
-   fromaddr = "augiesjunk263@gmail.com"
-   toaddr = "augustdoebling@gmail.com"
-   msg = MIMEMultipart()
-   msg['From'] = fromaddr
-   msg['To'] = toaddr
-   msg['Subject'] = "Digital Currencies: PASSED"
    body = ""
    subject = "Twitter : "
 
@@ -99,14 +101,7 @@ def main():
    print fin_msg
    body += fin_msg
 
-   msg['Subject'] = subject
-   msg.attach(MIMEText(body, 'plain'))
-   server = smtplib.SMTP('smtp.gmail.com', 587)
-   server.starttls()
-   server.login(fromaddr, EMAIL_PASSWORD)
-   text = msg.as_string()
-   server.sendmail(fromaddr, toaddr, text)
-   server.quit()
+   send_email(subject, body)
 
 
 if __name__ == '__main__':
