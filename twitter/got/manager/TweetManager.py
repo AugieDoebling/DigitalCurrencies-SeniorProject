@@ -23,17 +23,17 @@ class TweetManager:
 
 		while active:
 			json = TweetManager.getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy)
-			# if len(json['items_html'].strip()) == 0:
-				# break
 
-			# attempt to make this resilient
-			attempts = 0
-			while(len(json['items_html'].strip()) == 0 and attempts < 5):
+			if len(json['items_html'].strip()) == 0:
+				split_ref = refreshCursor.split('-')
+				split_ref[1] = str(int(split_ref[1])-10)
+				refreshCursor = '-'.join(split_ref)
+
 				json = TweetManager.getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy)
-				attempts += 1
+				break
 
-			if attempts == 5:
-				print "exit point 1"
+			if len(json['items_html'].strip()) == 0:
+				print "exit point 1 refCur = {}".format(refreshCursor)
 				break;
 
 			refreshCursor = json['min_position']
