@@ -31,16 +31,20 @@ class Tweet(peewee.Model):
       database = myDB
 
 def send_to_aws(tweet_array):
-   # global test
-   for t in tweet_array:
-      # id, text, date, favorites, retweets
-      # t.id, t.text.encode('utf-8')[:140], t.date.replace(second=0), t.favorites, t.retweets
-      stripped = lambda s: "".join(i for i in s if 31 < ord(i) < 127)
-      pw_tweet = Tweet.create(id=t.id, text=stripped(t.text)[:140], date=t.date.replace(second=0),
-         favorites=t.favorites, retweets=t.retweets)
-      pw_tweet.save()
+   send_data = []
 
-   print "Tweets: {} CurTime: {}".format(BUFFER_LENGTH, datetime.now())
+   for t in tweet_array:
+      stripped = lambda s: "".join(i for i in s if 31 < ord(i) < 127)
+      send_data.append({'id':t.id, 'text':stripped(t.text)[:140], 'date':t.date.replace(second=0), 
+         'favorites':t.favorites, 'retweets':t.retweets})
+
+   Tweet.insert_many(send_data).execute()
+
+   timestamp = 0
+   if len(send_data) > 0 :
+      timestamp = send_data[0]['date']
+
+   print "Tweets: {} CurTime: {} timestamp: {}".format(BUFFER_LENGTH, datetime.now(), timestamp)
 
 def get_params():
    max_n = raw_input("Max Tweets: ")
