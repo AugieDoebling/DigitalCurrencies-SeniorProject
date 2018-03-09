@@ -68,6 +68,7 @@ def main():
    msg['To'] = toaddr
    msg['Subject'] = "Digital Currencies: PASSED"
    body = ""
+   subject = "Twitter : "
 
    start_msg = "Starting tweet download.\nBufferSize = {}\nStartTime = {}\n".format(BUFFER_LENGTH, datetime.now())
    print start_msg
@@ -82,13 +83,14 @@ def main():
 
    try:
       got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer=send_to_aws, bufferLength=BUFFER_LENGTH)
+      subject += "SUCCESS"
    except Exception as e:
       err_msg = "Error occured at {}\n".format(datetime.now())
       print err_msg
       tb = sys.exc_info()[2]
       traceback.print_tb(tb)
-      msg['Subject'] = "Digital Currencies: ERROR"
-      body = err_msg
+      subject += "FAILURE"
+      body += err_msg
       
    end = datetime.now()
    myDB.close()
@@ -97,6 +99,7 @@ def main():
    print fin_msg
    body += fin_msg
 
+   msg['Subject'] = subject
    msg.attach(MIMEText(body, 'plain'))
    server = smtplib.SMTP('smtp.gmail.com', 587)
    server.starttls()
