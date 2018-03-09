@@ -1,6 +1,7 @@
 import urllib,urllib2,json,re,datetime,sys,cookielib
 from .. import models
 from pyquery import PyQuery
+import time
 
 class TweetManager:
 	
@@ -155,13 +156,34 @@ class TweetManager:
 			opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
 		opener.addheaders = headers
 
-		try:
-			response = opener.open(url)
-			jsonResponse = response.read()
-		except:
-			prob = "Twitter weird response. Try to see on browser: https://twitter.com/search?q=%s&src=typd" % urllib.quote(urlGetData)
+		# try:
+		# 	response = opener.open(url)
+		# 	jsonResponse = response.read()
+		# except:
+		# 	prob = "Twitter weird response. Try to see on browser: https://twitter.com/search?q=%s&src=typd" % urllib.quote(urlGetData)
+		# 	print prob
+		# 	raise Exception(prob)
+
+		jsonResponse = None
+		attempts = 0
+		prob = ""
+
+		while(jsonResponse == None and attempts < 3):
+			try:
+				response = opener.open(url)
+				jsonResponse = response.read()
+			except Exception as e:
+				prob = "Twitter weird response. Try to see on browser: https://twitter.com/search?q=%s&src=typd" % urllib.quote(urlGetData)
+				jsonResponse = None
+				attempts += 1
+				print "Twitter error. Sleeping, then attempting again"
+				time.sleep(180)
+
+		# after three tries, give up
+		if 3 <= attempts:
 			print prob
-			raise Exception(prob)
+			sys.exit()
+
 		
 		dataJson = json.loads(jsonResponse)
 		
