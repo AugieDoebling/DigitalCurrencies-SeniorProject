@@ -24,9 +24,11 @@ class TweetManager:
 		while active:
 			json = TweetManager.getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy)
 
+			print refreshCursor
+
 			if len(json['items_html'].strip()) == 0:
 				split_ref = refreshCursor.split('-')
-				split_ref[1] = str(int(split_ref[1])-10)
+				split_ref[1] = str(int(split_ref[1])-bufferLength)
 				refreshCursor = '-'.join(split_ref)
 
 				json = TweetManager.getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy)

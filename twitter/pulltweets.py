@@ -1,5 +1,5 @@
 import got
-from datetime import datetime
+from datetime import datetime, timedelta
 import peewee
 import requests
 import sys
@@ -46,17 +46,6 @@ def send_to_aws(tweet_array):
 
    print "Tweets: {} CurTime: {} timestamp: {}".format(BUFFER_LENGTH, datetime.now(), timestamp)
 
-def get_params():
-   max_n = raw_input("Max Tweets: ")
-   max_tweets = 0
-   if max_n.isdigit():
-      max_tweets = int(max_n)
-
-   since = raw_input("Since: (format 2018-07-10): ")
-   until = raw_input("Until: (format 2018-07-10): ")
-
-   return (since, until, max_tweets)
-
 def send_email(subject, message):
    recipient = "Augie Doebling <augustdoebling@gmail.com>"
    return requests.post(
@@ -67,48 +56,56 @@ def send_email(subject, message):
             "subject": subject,
             "text": message})
 
-def main():
-   if DB_USERNAME == "" or DB_PASSWORD == "" or EMAIL_PASSWORD == "":
-      print "PASSWORDS NOT INCLUDED"
-
-   since, until, max_tweets = get_params()
-
-   body = ""
-   subject = "Twitter : "
-
-   start_msg = "Starting tweet download.\nBufferSize = {}\nStartTime = {}\n".format(BUFFER_LENGTH, datetime.now())
-   print start_msg
-   body += start_msg
-
+def day_of_data(date):
+   since = date.strftime("%Y-%m-%d")
+   until = (date + timedelta(days=1)).strftime("%Y-%m-%d")
    tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin -giveaway -#freebitcoin').setSince(since).setUntil(until)
-   if(max_tweets != 0):
-      tweetCriteria = tweetCriteria.setMaxTweets(max_tweets)
-   
-   start = datetime.now()
-   lap_time = datetime.now()
 
+   res = ""
    result_count = 0
 
    try:
       result_count = got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer=send_to_aws, bufferLength=BUFFER_LENGTH)
-      subject += "SUCCESS"
+      res = "SUCCESS"
    except Exception as e:
-      err_msg = "Error occured at {}\n".format(datetime.now())
-      print err_msg
+      res = "FAULURE: \n Error occured at {}\n".format(datetime.now())
+      print res
       tb = sys.exc_info()[2]
       traceback.print_tb(tb)
-      subject += "FAILURE"
-      body += err_msg
-      
+
+   return (res, result_count)
+
+def main():
+   if DB_USERNAME == "" or DB_PASSWORD == "" or EMAIL_PASSWORD == "":
+      print "PASSWORDS NOT INCLUDED"
+
+   month = datetime.strptime(raw_input("Month (format 2018-06): "), "%Y-%m")
+   cur_day = month
+
+   body = "Starting tweet download.\nBufferSize = {}\nStartTime = {}\n\n".format(BUFFER_LENGTH, datetime.now())
+   start = datetime.now()
+   lap_time = start
+
+   # while we're still in the same month
+   while cur_day.month == month.month:
+      day_res = day_of_data(cur_day)
+
+      day_msg = "Date : {} Status : {}\n    Records Collected : {} Time : {}\n".format(cur_day.strftime("%Y-%m-%d"),
+         day_res[0], day_res[1], datetime.now()-lap_time)
+      print day_msg
+      body += day_msg
+
+      cur_day = cur_day + timedelta(days=1)
+      lap_time = datetime.now()
+
    end = datetime.now()
    myDB.close()
 
-   fin_msg = "\nFinished. Recieved tweets in {}\nDates : {} -> {}\nRecieved {} tweets".format(end-start, since, until, result_count)
+   fin_msg = "\nFinished in {}".format(end-start)
    print fin_msg
    body += fin_msg
 
-   send_email(subject, body)
-
+   send_email("Twitter SeniorProject v2", body)
 
 if __name__ == '__main__':
    main()
