@@ -4,6 +4,7 @@ import peewee
 import requests
 import sys
 import traceback
+from dateutil.relativedelta import relativedelta
 
 BUFFER_LENGTH = 100
 
@@ -79,15 +80,20 @@ def main():
    if DB_USERNAME == "" or DB_PASSWORD == "" or EMAIL_PASSWORD == "":
       print "PASSWORDS NOT INCLUDED"
 
-   month = datetime.strptime(raw_input("Month (format 2018-06): "), "%Y-%m")
-   cur_day = month
+   start_month = datetime.strptime(raw_input("Start Month (format 2018-06): "), "%Y-%m")
+   month_count = int(raw_input("Number of Months to Collect: "))
 
-   body = "Starting tweet download.\nBufferSize = {}\nStartTime = {}\n\n".format(BUFFER_LENGTH, datetime.now())
+   end_month = start_month + relativedelta(months=month_count-1)
+   cur_day = start_month
+
+   body = "Starting tweet download.\nRange {} -> {}\nStartTime = {}\n\n".format(start_month.strftime("%Y-%m"), 
+      end_month.strftime("%Y-%m"), datetime.now())
+   print body
    start = datetime.now()
    lap_time = start
 
    # while we're still in the same month
-   while cur_day.month == month.month:
+   while cur_day.month <= end_month.month:
       day_res = day_of_data(cur_day)
 
       day_msg = "Date : {} Status : {}\n    Records Collected : {} Time : {}\n".format(cur_day.strftime("%Y-%m-%d"),
