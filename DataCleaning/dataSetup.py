@@ -37,7 +37,7 @@ cursor.execute(tweetsQuery)
 tweetsRows = cursor.fetchall()
 
 ## clean the variables for later use
-tweets = pd.DataFrame(list(tweetsRows),columns=["id","text","date","favorites","retweets"])
+tweets = pd.DataFrame(list(tweetsRows),columns=["tablekey","id","text","date","favorites","retweets"])
 tweets['date'] = pd.to_datetime(tweets['date'],unit = 's')
 tweets['count'] = 1
 
