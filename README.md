@@ -13,4 +13,6 @@ To do so, we will collect data using APIs about both the prevalence of conversat
 ## What's in This Repository
 **Twitter** - Code used to call Twitter API to collect data. After initial collection, we have about 6 million rows. After its finalized, our plan is to publish this (and other public data we've collected to [Kaggle](https://www.kaggle.com/datasets).
 
+**DataCleaning** - Scripts used to create a data file necessary for stistical learning analyses.  dataSetup.py is the main script to run and will create a csv file containing currency prices by minute along with information about tweets regarding the currency (sentiment, favorites, etc)
+
 *More to come as project progesses*
