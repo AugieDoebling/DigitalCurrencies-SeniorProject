@@ -15,9 +15,9 @@ import helpers
 
 ## create a connection
 connection = pymysql.connect(host='seniorproject.cxbqypcd9gwp.us-east-2.rds.amazonaws.com',
-	                         user='aughans',
-	                         password='mauryshow',
-	                         db='seniorproject')
+	                         user='',
+	                         password='',
+	                         db='')
 
 ## get all the rows from the sql database
 cursor = connection.cursor()
