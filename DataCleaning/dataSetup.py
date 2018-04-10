@@ -13,11 +13,18 @@ import pandas as pd
 from textblob import TextBlob
 import helpers
 
+DB_USERNAME = ""
+DB_PASSWORD = ""
+
+with open("creds.txt", "r") as creds:
+   DB_USERNAME = creds.readline()[:-1]
+   DB_PASSWORD = creds.readline()[:-1]
+
 ## create a connection
 connection = pymysql.connect(host='seniorproject.cxbqypcd9gwp.us-east-2.rds.amazonaws.com',
-	                         user='',
-	                         password='',
-	                         db='')
+	                         user=DB_USERNAME,
+	                         password=DB_PASSWORD,
+	                         db='seniorproject')
 
 ## get all the rows from the sql database
 cursor = connection.cursor()
