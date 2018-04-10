@@ -27,6 +27,7 @@ class Tweet(peewee.Model):
    date = peewee.TimestampField()
    favorites = peewee.IntegerField()
    retweets = peewee.IntegerField()
+   table_key = peewee.IntegerField(primary_key=True)
 
    class Meta:
       database = myDB
@@ -60,7 +61,7 @@ def send_email(subject, message):
 def day_of_data(date):
    since = date.strftime("%Y-%m-%d")
    until = (date + timedelta(days=1)).strftime("%Y-%m-%d")
-   tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin -giveaway -#freebitcoin').setSince(since).setUntil(until)
+   tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin').setSince(since).setUntil(until)
 
    res = ""
    result_count = 0
@@ -113,5 +114,15 @@ def main():
 
    send_email("Twitter SeniorProject v2", body)
 
+def test_day():
+   day = "2018-02-21"
+   
+   day_res = day_of_data(datetime.strptime(day, "%Y-%m-%d"))
+   print "RESULT    status: {}   count: {}".format(day_res[0], day_res[1])
+
+
+
+
 if __name__ == '__main__':
-   main()
+   # main()
+   test_day()
