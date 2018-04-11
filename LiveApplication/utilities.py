@@ -10,10 +10,10 @@ def get_currency_price(currency_code):
    # parse from json
    prices = request.json()
    # return the price in US dollars
-   return prices['data']['rates']['USD']
+   return float(prices['data']['rates']['USD'])
 
 
-def get_recent_tweets(search_terms, tweet_count):
+def get_recent_tweets(search_terms, tweet_count=1000):
    # collect tweets from today until tomorrow.
    today = datetime.now().strftime("%Y-%m-%d")
    tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
