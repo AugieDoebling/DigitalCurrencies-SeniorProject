@@ -5,6 +5,9 @@ Authors:
 * [Augie Doebling](https://github.com/AugieDoebling)
 * [Hans Schumann](https://github.com/HSchumann)
 
+Collected Data:
+* [Bitcoin Data from Twitter](https://kaggle.com/augiedoebling/bitcoin-tweets)
+
 ## Objective
 Using social network data, news articles and search trends, we would like to
 model an optimal time to buy and sell digital currencies in short-term time
@@ -19,10 +22,7 @@ currencies in a more efficient way than humans could.  This would result in
 profits (or marginal gains) that could be measured in a small experiment.
 
 ## What's in This Repository
-**Twitter** - Code used to call Twitter API to collect data. After initial
-collection, we have about 6 million rows. After its finalized, our plan is to
-publish this (and other public data we've collected to
-[Kaggle](https://www.kaggle.com/datasets).
+**Twitter** - Code used to call Twitter API to collect data. After collection, we have about 6 million data rows. We have [published this data to Kaggle.](https://kaggle.com/augiedoebling/bitcoin-tweets)
 
 **DataCleaning** - Scripts used to create a data file necessary for statistical
  learning analyses.  dataSetup.py is the main script to run and will create a
@@ -32,7 +32,7 @@ publish this (and other public data we've collected to
 **LiveApplication** - Application using models and data from database to
 predict best time to purchase and sell Bitcoin. Currently the application only
 simulates the buying/selling of Bitcoin and keeps track of how much money it
-would have. 
+would have.
 
 *More to come as project progresses*
 
