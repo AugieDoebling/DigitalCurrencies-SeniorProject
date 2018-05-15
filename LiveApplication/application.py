@@ -1,86 +1,54 @@
 # -*- coding: utf-8 -*-
-
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 from utilities import *
-import time
-import pause
+import peewee
 
-usd_account = 1000.0
-btc_account = 0.0
+# get sql credentials from creds.txt
+with open("creds.txt", "r") as creds:
+   DB_USERNAME = creds.readline()[:-1]
+   DB_PASSWORD = creds.readline()[:-1]
+   EMAIL_PASSWORD = creds.readline()[:-1]
 
-def buy(btc_price, purch_amount):
-   global usd_account
-   global btc_account
-   # remove from usd account
-   usd_account -= purch_amount
+# PeeWee classes for interacting with the database
+myDB = peewee.MySQLDatabase("seniorproject", host="seniorproject.cxbqypcd9gwp.us-east-2.rds.amazonaws.com", 
+   port=3306, user=DB_USERNAME, passwd=DB_PASSWORD)
+class Live_buy(peewee.Model):
+   id = peewee.BigIntegerField()
+   time = peewee.DateTimeField()
+   threshold = peewee.DoubleField()
+   expected_change = peewee.DoubleField()
+   price_at_purchase = peewee.DoubleField()
+   class Meta:
+      database = myDB
+class Live_sell(peewee.Model):
+   id = peewee.BigIntegerField()
+   time = peewee.DateTimeField()
+   threshold = peewee.DoubleField()
+   change = peewee.DoubleField()
+   class Meta:
+      database = myDB
 
-   # amount of btc to buy
-   btc_purchase = purch_amount / btc_price
-   # add to bitcoin account
-   btc_account += btc_purchase
+def sell():
+   # collect the purchases from the last 24hrs
+   purchases = Live_buy.select().where(Live_buy.time > datetime.utcnow() - timedelta(days=1))
+   # grab selling price
+   cur_price = get_currency_price('BTC')
+   # 'sell' every purchase from the last 24hrs and record the change
+   for purch in purchases:
+      Live_sell.create(
+         threshold=purch.threshold,
+         change=cur_price-purch.price_at_purchase)
 
-   print "Purchase:\n   ${:.4f} USD on BTC at price ${:.2f}".format(purch_amount, btc_price)
+def collect_tweets():
+   return "tweets here"
 
-def sell(btc_price):
-   global usd_account
-   global btc_account
-   # price sold for in usd
-   sell_amount = btc_account * btc_price
-   # add to usd account
-   usd_account += sell_amount
-
-   # remove from btc account
-   btc_account = 0.0
-
-   print "Sale:\n   ${:.4f} worth of BTC at price ${:.2f}".format(sell_amount, btc_price)
-
-def invest(btc_price, tweets, purch_amount):
-   should_buy = True
-   # sell_time = datetime.now() + relativedelta(minutes=1)
-   sell_time = datetime.now() + relativedelta(seconds=10)
-
-   if should_buy:
-      buy(btc_price, purch_amount)
-
-   return (should_buy, sell_time)
-
-def main():
-   # currently holding bitcoin
-   holding = False
-   # price at purchase
-   purchase_price = None
-   # time at which we should sell
-   sell_time = None
-   # how much of the account we should spend
-   purch_amount = 100.0
-
-   while True:
-      # get the recent tweets
-      status, tweets = get_recent_tweets('bitcoin', 100)
-      if status and not holding:
-         purchase_price = get_currency_price('BTC')
-         holding, sell_time = invest(purchase_price, tweets, purch_amount)
-
-      # if currently holding bitcoin
-      if holding:
-         pause.until(sell_time)
-
-         cur_price = get_currency_price('BTC')
-
-         sell(get_currency_price('BTC'))
-         holding = False
-      # if not holding bitcoin
-      else:
-         # pause.minutes(1)
-         time.sleep(10)
-
-      print "Account Status:\n   USD ) $ {:.4f}      BTC ) ₿ {:.10f}".format(usd_account, btc_account)
-
-      if btc_account == 0.0 and usd_account < purch_amount:
-         print "Ran out of money"
-         break;
-
-
-if __name__ == '__main__':
-   main()
+def buy(exp_price, thresholds):
+   # for every threshold value
+   for th in thresholds:
+      # if we should buy at this threshold
+      if exp_price >= th:
+         # save a record of a 'purchase'
+         Live_buy.create(
+            threshold=th,
+            expected_change=exp_price,
+            price_at_purchase=get_currency_price('BTC'))

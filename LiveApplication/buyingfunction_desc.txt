@@ -1,0 +1,28 @@
+Buying Function
+    
+    always sells in exactly 24hrs
+
+    need data from last 72 hrs
+
+
+
+Script
+    0. sell if necessary
+    1. collect data from last 24hrs
+    2. calculates needed variables - hans
+    3. run the model with the variables - hans
+        returns value
+    4. buy with 10% of our money
+        4 different times w/ different thresholds
+
+
+DB Table Design
+    Sell
+        time - datetime
+        threshold - float
+        change - float
+    Buy
+        time - datetime
+        threshold - float
+        expected_change - float
+        price_at_purchase - float
