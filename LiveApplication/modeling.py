@@ -2,6 +2,7 @@ import pymysql
 import numpy as np
 import pandas as pd
 import peewee
+import pickle
 from textblob import TextBlob
 
 def calc_model_variables(tweets):
@@ -12,12 +13,13 @@ def calc_model_variables(tweets):
     """
     raise NotImplementedError()
 
-def load_model():
+def load_model(model_name):
     """
-    :param ?: whatever parameters we need
+    :param model_name: string of the file that the model is saved in
+        ("model.sav")
     :return: the model to pass to determine_purchase
     """
-    raise NotImplementedError()
+    return pickle.load(model_name)
 
 def determine_expected_price(data, model):
     """
