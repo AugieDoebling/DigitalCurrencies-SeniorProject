@@ -19,7 +19,7 @@ def load_model(model_name):
         ("model.sav")
     :return: the model to pass to determine_purchase
     """
-    return pickle.load(model_name)
+    return pickle.load(open(model_name, 'rb'))
 
 def determine_expected_price(data, model):
     """
