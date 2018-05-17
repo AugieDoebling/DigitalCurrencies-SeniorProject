@@ -37,3 +37,15 @@ def create_rolling_sums(df,times):
             df[('sum' + str(times[i]) + '_retweets')] = df[('sum' + str(times[i]) + '_retweets')] - df['retweets'].rolling(times[i-1]-1).sum().fillna(method = 'bfill')
             df[('sum' + str(times[i]) + '_avg_sentiment')] = df[('sum' + str(times[i]) + '_avg_sentiment')] -df['avg_sentiment'].rolling(times[i-1]-1).sum().fillna(method = 'bfill')
     return df
+
+def determine_purchase(data, model, threshold = 0):
+    """
+    :param data: input array of the x variables (one row of a dataframe)
+    :parma model: used for determining predicted prices change
+    :return: true or false based on if we should buy
+    """
+    if model.predict([data])[0] > threshold:
+        return True
+    else:
+        return False
+    
