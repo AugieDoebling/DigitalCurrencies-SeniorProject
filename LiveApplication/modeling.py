@@ -13,13 +13,13 @@ def tweet_to_dict(tweet):
         'date': tweet.date,
         'favorites': tweet.favorites,
         'retweets': tweet.retweets,
-        'Sunday'   :1 if datetime.now().weekday() == 6 else 0,
-        'Monday'   :1 if datetime.now().weekday() == 0 else 0,
-        'Tuesday'  :1 if datetime.now().weekday() == 1 else 0,
-        'Wednesday':1 if datetime.now().weekday() == 2 else 0,
-        'Thursday' :1 if datetime.now().weekday() == 3 else 0,
-        'Friday'   :1 if datetime.now().weekday() == 4 else 0,
-        'Saturday' :1 if datetime.now().weekday() == 5 else 0,
+        'Sunday'   :1 if weekday == 6 else 0,
+        'Monday'   :1 if weekday == 0 else 0,
+        'Tuesday'  :1 if weekday == 1 else 0,
+        'Wednesday':1 if weekday == 2 else 0,
+        'Thursday' :1 if weekday == 3 else 0,
+        'Friday'   :1 if weekday == 4 else 0,
+        'Saturday' :1 if weekday == 5 else 0,
       }
 
 def tweet_array_to_df(tweet_array):
