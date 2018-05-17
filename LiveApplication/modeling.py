@@ -4,6 +4,25 @@ import pandas as pd
 import peewee
 from textblob import TextBlob
 
+def tweet_to_dict(tweet):
+    return {
+        'id': tweet.id,
+        'text': tweet.text,
+        'date': tweet.date,
+        'favorites': tweet.favorites,
+        'retweets': tweet.retweets,
+      }
+
+def tweet_array_to_df(tweet_array):
+    """
+    :param tweet_array: list of tweet objects collected. Each Tweet is an object with 
+        the attributes as class variables. 
+    :return: pandas df version of data
+    """
+    return pd.DataFrame.from_records([tweet_to_dict(t) for t in one_t], 
+        columns=['id', 'text', 'date', 'favorites','retweets'])
+
+
 def calc_model_variables(tweets):
     """
     :param tweets: list of tweet objects collected. Each Tweet is an object with 
