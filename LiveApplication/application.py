@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 from utilities import *
+from modeling import *
 import peewee
 import sys
 import traceback
@@ -99,14 +100,17 @@ def main():
    sell_prices = sell()
    
    # collect_tweets
-   tweets = collect_tweets()
+   tweet_array = collect_tweets()
+   tweet_df = tweet_array_to_df(tweet_array)
    
    # calculate needed variables
-   # model_variables = calc_vars(tweets)
+   model_variables = calc_model_variables(tweet_df)
+
+   # load model
+   saved_model = load_model('model.sav')
 
    # run variables through model
-   # expected_change = run_through_model(model_variables)
-   expected_change = 234.0
+   expected_change = determine_expected_price(model_variables, saved_model)
 
    # 'buy' bitcoin according to different price thresholds
    purchased_price = buy(expected_change, thresholds, amount_usd)
