@@ -27,4 +27,11 @@ def determine_expected_price(data, model):
     :parma model: used for determining predicted prices change
     :return: expected price change
     """
-    return model.predict([data])[0]
+    ## initialize the x variables (hard coded)
+    x_vars = ['count','favorites','retweets','avg_sentiment',
+          'sum1440_count','sum1440_favorites','sum1440_retweets','sum1440_avg_sentiment',
+          'sum2880_count','sum2880_favorites','sum2880_retweets','sum2880_avg_sentiment',
+          'sum4320_count','sum4320_favorites','sum4320_retweets','sum4320_avg_sentiment',
+          'Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+    
+    return model.predict([data[x_vars]])[0]
