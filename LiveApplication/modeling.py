@@ -6,12 +6,20 @@ import pickle
 from textblob import TextBlob
 
 def tweet_to_dict(tweet):
+    weekday = tweet.date.weekday()
     return {
         'id': tweet.id,
         'text': tweet.text,
         'date': tweet.date,
         'favorites': tweet.favorites,
         'retweets': tweet.retweets,
+        'Sunday'   :1 if datetime.now().weekday() == 6 else 0,
+        'Monday'   :1 if datetime.now().weekday() == 0 else 0,
+        'Tuesday'  :1 if datetime.now().weekday() == 1 else 0,
+        'Wednesday':1 if datetime.now().weekday() == 2 else 0,
+        'Thursday' :1 if datetime.now().weekday() == 3 else 0,
+        'Friday'   :1 if datetime.now().weekday() == 4 else 0,
+        'Saturday' :1 if datetime.now().weekday() == 5 else 0,
       }
 
 def tweet_array_to_df(tweet_array):
@@ -21,7 +29,8 @@ def tweet_array_to_df(tweet_array):
     :return: pandas df version of data
     """
     return pd.DataFrame.from_records([tweet_to_dict(t) for t in one_t], 
-        columns=['id', 'text', 'date', 'favorites','retweets'])
+        columns=['id', 'text', 'date', 'favorites','retweets', 'Sunday', 'Monday', 'Tuesday', 
+        'Wednesday', 'Thursday', 'Friday', 'Saturday'])
 
 
 def calc_model_variables(tweets):
