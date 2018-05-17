@@ -1,86 +1,118 @@
 # -*- coding: utf-8 -*-
-
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 from utilities import *
-import time
-import pause
+import peewee
+import sys
+import traceback
 
-usd_account = 1000.0
-btc_account = 0.0
+# get sql credentials from creds.txt
+with open("creds.txt", "r") as creds:
+   DB_USERNAME = creds.readline()[:-1]
+   DB_PASSWORD = creds.readline()[:-1]
+   EMAIL_PASSWORD = creds.readline()[:-1]
 
-def buy(btc_price, purch_amount):
-   global usd_account
-   global btc_account
-   # remove from usd account
-   usd_account -= purch_amount
+# PeeWee classes for interacting with the database
+myDB = peewee.MySQLDatabase("seniorproject", host="seniorproject.cxbqypcd9gwp.us-east-2.rds.amazonaws.com", 
+   port=3306, user=DB_USERNAME, passwd=DB_PASSWORD)
+class Live_buy(peewee.Model):
+   id = peewee.BigIntegerField()
+   time = peewee.DateTimeField()
+   threshold = peewee.DoubleField()
+   expected_change = peewee.DoubleField()
+   purchased_btc = peewee.DoubleField()
+   class Meta:
+      database = myDB
+class Live_sell(peewee.Model):
+   id = peewee.BigIntegerField()
+   time = peewee.DateTimeField()
+   threshold = peewee.DoubleField()
+   sell_price = peewee.DoubleField()
+   class Meta:
+      database = myDB
 
-   # amount of btc to buy
-   btc_purchase = purch_amount / btc_price
-   # add to bitcoin account
-   btc_account += btc_purchase
+def sell():
+   # collect the purchases from the last 24hrs
+   purchases = Live_buy.select().where(Live_buy.time > datetime.utcnow() - timedelta(hours=36))
+   # grab selling price
+   cur_price = get_currency_price('BTC')
+   # sell prices 
+   sold = []
+   # 'sell' every purchase from the last 24hrs and record the change
+   for purch in purchases:
+      sell_p = cur_price * purch.purchased_btc
+      sold.append(sell_p)
+      Live_sell.create(
+         threshold=purch.threshold,
+         sell_price=sell_p)
 
-   print "Purchase:\n   ${:.4f} USD on BTC at price ${:.2f}".format(purch_amount, btc_price)
+   return sold
 
-def sell(btc_price):
-   global usd_account
-   global btc_account
-   # price sold for in usd
-   sell_amount = btc_account * btc_price
-   # add to usd account
-   usd_account += sell_amount
+def print_tweets(tweets):
+   timestamp = '?'
+   if len(tweets) > 0 :
+      timestamp = tweets[0].date
 
-   # remove from btc account
-   btc_account = 0.0
+   print "Tweets: {} CurTime: {} timestamp: {}".format(100, datetime.now(), timestamp)
 
-   print "Sale:\n   ${:.4f} worth of BTC at price ${:.2f}".format(sell_amount, btc_price)
+def collect_tweets():
+   since = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+   until = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+   tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin').setSince(since).setUntil(until)
 
-def invest(btc_price, tweets, purch_amount):
-   should_buy = True
-   # sell_time = datetime.now() + relativedelta(minutes=1)
-   sell_time = datetime.now() + relativedelta(seconds=10)
+   results = []
 
-   if should_buy:
-      buy(btc_price, purch_amount)
+   try:
+      results = got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer=print_tweets)
+      print "SUCCESS"
+      print len(results)
+   except Exception as e:
+      print "FAULURE: \n Error occured at {}\n".format(datetime.now())
+      traceback.print_tb(sys.exc_info()[2])
 
-   return (should_buy, sell_time)
+   return results
+
+def buy(exp_price, thresholds, amount):
+   # BTC price
+   btc_price = get_currency_price('BTC')
+   # usd amount to btc
+   purch = amount / btc_price
+   # for every threshold value
+   for th in thresholds:
+      # if we should buy at this threshold
+      if exp_price >= th:
+         # save a record of a 'purchase'
+         Live_buy.create(
+            threshold=th,
+            expected_change=exp_price,
+            purchased_btc=purch)
+   return btc_price
 
 def main():
-   # currently holding bitcoin
-   holding = False
-   # price at purchase
-   purchase_price = None
-   # time at which we should sell
-   sell_time = None
-   # how much of the account we should spend
-   purch_amount = 100.0
+   # PARAMETERS
+   # amount in USD to buy
+   amount_usd = 100.0
+   # different thresholds to purchase at
+   thresholds = [0.0, 100.0, 300.0]
 
-   while True:
-      # get the recent tweets
-      status, tweets = get_recent_tweets('bitcoin', 100)
-      if status and not holding:
-         purchase_price = get_currency_price('BTC')
-         holding, sell_time = invest(purchase_price, tweets, purch_amount)
 
-      # if currently holding bitcoin
-      if holding:
-         pause.until(sell_time)
+   # sell btc purchased 
+   sell_prices = sell()
+   
+   # collect_tweets
+   tweets = collect_tweets()
+   
+   # calculate needed variables
+   # model_variables = calc_vars(tweets)
 
-         cur_price = get_currency_price('BTC')
+   # run variables through model
+   # expected_change = run_through_model(model_variables)
+   expected_change = 234.0
 
-         sell(get_currency_price('BTC'))
-         holding = False
-      # if not holding bitcoin
-      else:
-         # pause.minutes(1)
-         time.sleep(10)
+   # 'buy' bitcoin according to different price thresholds
+   purchased_price = buy(expected_change, thresholds, amount_usd)
 
-      print "Account Status:\n   USD ) $ {:.4f}      BTC ) ₿ {:.10f}".format(usd_account, btc_account)
-
-      if btc_account == 0.0 and usd_account < purch_amount:
-         print "Ran out of money"
-         break;
-
+   # notify augie via email
+   notification_email(sell_prices, expected_change, purchased_price, EMAIL_PASSWORD)
 
 if __name__ == '__main__':
    main()

@@ -12,6 +12,24 @@ def get_currency_price(currency_code):
    # return the price in US dollars
    return float(prices['data']['rates']['USD'])
 
+def send_email(subject, message, email_password):
+   recipient = "Augie Doebling <augustdoebling@gmail.com>"
+   return requests.post(
+      "https://api.mailgun.net/v3/sandbox1901f3bfd2e64cb9b1e4a3ea2525a8e2.mailgun.org/messages",
+      auth=("api", email_password),
+      data={"from": "Mailgun Sandbox <postmaster@sandbox1901f3bfd2e64cb9b1e4a3ea2525a8e2.mailgun.org>",
+            "to": recipient,
+            "subject": subject,
+            "text": message})
+
+def notification_email(sell_prices, expected_change, purchased_price, email_password):
+   message = "SOLD\n"
+   for s in sell_prices:
+      message += "   sold ${0} worth of BTC\n".format(s)
+   message += "\nEXPECTED CHANGE\n   {0}".format(expected_change)
+   message += "\n\nPURCHASES\n   purchased $100 worth of BTC at {0}\n".format(purchased_price)
+
+   send_email("Live BTC App Notification", message, email_password)
 
 def get_recent_tweets(search_terms, tweet_count=1000):
    # collect tweets from today until tomorrow.
