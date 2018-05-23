@@ -63,7 +63,7 @@ def collect_tweets():
    results = []
 
    try:
-      results = got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer=print_tweets)
+      results = got.manager.TweetManager.getTweets(tweetCriteria)
       print "SUCCESS"
       print len(results)
    except Exception as e:
@@ -95,28 +95,46 @@ def main():
    # different thresholds to purchase at
    thresholds = [0.0, 100.0, 300.0]
 
+   print "going to sell btc..."
 
    # sell btc purchased 
    sell_prices = sell()
+
+   print "sold btc"
+   print "going to collect tweets..."
    
    # collect_tweets
    tweet_array = collect_tweets()
    tweet_df = tweet_array_to_df(tweet_array)
+
+   print "collected tweets"
+   print "calculating variables..."
    
    # calculate needed variables
    model_variables = calc_model_variables(tweet_df)
 
+   print "calculated variables"
+   print "calculating expected change..."
+
    # load model
-   saved_model = load_model('model.sav')
+   saved_model = load_model('../TwitterDataCollection/model.sav')
 
    # run variables through model
    expected_change = determine_expected_price(model_variables, saved_model)
 
+   print "expected change done"
+   print "buying..."
+
    # 'buy' bitcoin according to different price thresholds
    purchased_price = buy(expected_change, thresholds, amount_usd)
 
+   print "bought"
+   print "sending email..."
+
    # notify augie via email
    notification_email(sell_prices, expected_change, purchased_price, EMAIL_PASSWORD)
+
+   print "finished"
 
 if __name__ == '__main__':
    main()
