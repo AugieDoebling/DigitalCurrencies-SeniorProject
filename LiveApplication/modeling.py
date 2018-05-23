@@ -5,13 +5,35 @@ import peewee
 import pickle
 from textblob import TextBlob
 
+def create_rolling_sums(df,times):
+    """
+    Creates the training and testing sets with sums of the tweet variables
+    for given time periods as specified
+    
+    :param df: the dataframe to use
+    :param times: an array of the times wanted 
+    :return dataframe with the created variables
+    """
+    for i in range(len(times)):
+        df[('sum' + str(times[i]) + '_count')] = df['count'].rolling(times[i]-1).sum().fillna(method = 'bfill')
+        df[('sum' + str(times[i]) + '_favorites')] = df['favorites'].rolling(times[i]-1).sum().fillna(method = 'bfill')
+        df[('sum' + str(times[i]) + '_retweets')] = df['retweets'].rolling(times[i]-1).sum().fillna(method = 'bfill')
+        df[('sum' + str(times[i]) + '_avg_sentiment')] = df['avg_sentiment'].rolling(times[i]-1).sum().fillna(method = 'bfill')
+        # subtract all but the time period of interest
+        if (i > 1):
+            df[('sum' + str(times[i]) + '_count')] = df[('sum' + str(times[i]) + '_count')] - df['count'].rolling(times[i-1]-1).sum().fillna(method = 'bfill')
+            df[('sum' + str(times[i]) + '_favorites')] = df[('sum' + str(times[i]) + '_favorites')] - df['favorites'].rolling(times[i-1]-1).sum().fillna(method = 'bfill')
+            df[('sum' + str(times[i]) + '_retweets')] = df[('sum' + str(times[i]) + '_retweets')] - df['retweets'].rolling(times[i-1]-1).sum().fillna(method = 'bfill')
+            df[('sum' + str(times[i]) + '_avg_sentiment')] = df[('sum' + str(times[i]) + '_avg_sentiment')] -df['avg_sentiment'].rolling(times[i-1]-1).sum().fillna(method = 'bfill')
+    return df
+
 def calc_model_variables(tweetsRows):
     """
     :param tweets: list of tweet objects collected. Each Tweet is an object with 
         the attributes as class variables. 
     :return: dataframe of the tweet variables aggregated by minute
     :return: whatever variables we need to pass to the determine_purchase function
-    """
+    """    
     tweets = pd.DataFrame(list(tweetsRows),columns=["tablekey","id","text","date","favorites","retweets"])
     tweets['date'] = pd.to_datetime(tweets['date'],unit = 's')
     tweets['count'] = 1
@@ -27,15 +49,9 @@ def calc_model_variables(tweetsRows):
     ## convert index to a datetime variable
     ag['datetime'] = pd.to_datetime(ag.index)
     ag = ag.reset_index(drop = True)
+    
+    ag = create_rolling_sums(ag,[1440,2880,4320])
     return ag
-
-def merge_data(bitcoinData,tweetData):
-    """
-    :param bitcoinData: dataframe of the aggregated bitcoinData with the variables necessary
-    :param tweetData: dataframe of the aggregated data for the tweets
-    """
-    allData = bitcoinData.merge(tweetData,on = 'datetime')
-    return allData
 
 def load_model(model_name):
     """
