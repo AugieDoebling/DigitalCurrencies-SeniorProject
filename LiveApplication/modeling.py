@@ -16,7 +16,7 @@ def create_rolling_sums(df,times):
     """
     for i in range(len(times)):
         df[('sum' + str(times[i]) + '_count')] = df['count'].rolling(times[i]-1).sum().fillna(method = 'bfill')
-        df[('sum' + str(times[i]) + '_favorites')] = df['favorites'].rolling(times[i]-1).sum().fillna(method = 'bfill')
+        df[g('sum' + str(times[i]) + '_favorites')] = df['favorites'].rolling(times[i]-1).sum().fillna(method = 'bfill')
         df[('sum' + str(times[i]) + '_retweets')] = df['retweets'].rolling(times[i]-1).sum().fillna(method = 'bfill')
         df[('sum' + str(times[i]) + '_avg_sentiment')] = df['avg_sentiment'].rolling(times[i]-1).sum().fillna(method = 'bfill')
         # subtract all but the time period of interest
