@@ -5,41 +5,37 @@ import peewee
 import pickle
 from textblob import TextBlob
 
-def tweet_to_dict(tweet):
-    weekday = tweet.date.weekday()
-    return {
-        'id': tweet.id,
-        'text': tweet.text,
-        'date': tweet.date,
-        'favorites': tweet.favorites,
-        'retweets': tweet.retweets,
-        'Sunday'   :1 if weekday == 6 else 0,
-        'Monday'   :1 if weekday == 0 else 0,
-        'Tuesday'  :1 if weekday == 1 else 0,
-        'Wednesday':1 if weekday == 2 else 0,
-        'Thursday' :1 if weekday == 3 else 0,
-        'Friday'   :1 if weekday == 4 else 0,
-        'Saturday' :1 if weekday == 5 else 0,
-      }
-
-def tweet_array_to_df(tweet_array):
-    """
-    :param tweet_array: list of tweet objects collected. Each Tweet is an object with 
-        the attributes as class variables. 
-    :return: pandas df version of data
-    """
-    return pd.DataFrame.from_records([tweet_to_dict(t) for t in one_t], 
-        columns=['id', 'text', 'date', 'favorites','retweets', 'Sunday', 'Monday', 'Tuesday', 
-        'Wednesday', 'Thursday', 'Friday', 'Saturday'])
-
-
-def calc_model_variables(tweets):
+def calc_model_variables(tweetsRows):
     """
     :param tweets: list of tweet objects collected. Each Tweet is an object with 
         the attributes as class variables. 
+    :return: dataframe of the tweet variables aggregated by minute
     :return: whatever variables we need to pass to the determine_purchase function
     """
-    raise NotImplementedError()
+    tweets = pd.DataFrame(list(tweetsRows),columns=["tablekey","id","text","date","favorites","retweets"])
+    tweets['date'] = pd.to_datetime(tweets['date'],unit = 's')
+    tweets['count'] = 1
+    
+    ## sentiment analysis
+    sents = [TextBlob(tw).sentiment.polarity for tw in tweets['text']]
+    tweets = pd.concat([tweets,pd.DataFrame(sents,columns=['sentiment'])],axis = 1)
+
+    ## get dataframe of number of tweets, number of favorites
+    ag1 = tweets[['date','count','favorites','retweets']].groupby('date').sum()
+    ag2 = tweets[['date','sentiment']].groupby('date').mean()
+    ag = pd.concat([ag1,ag2],axis = 1)
+    ## convert index to a datetime variable
+    ag['datetime'] = pd.to_datetime(ag.index)
+    ag = ag.reset_index(drop = True)
+    return ag
+
+def merge_data(bitcoinData,tweetData):
+    """
+    :param bitcoinData: dataframe of the aggregated bitcoinData with the variables necessary
+    :param tweetData: dataframe of the aggregated data for the tweets
+    """
+    allData = bitcoinData.merge(tweetData,on = 'datetime')
+    return allData
 
 def load_model(model_name):
     """
@@ -54,12 +50,15 @@ def determine_expected_price(data, model):
     :param data: input array of the x variables (one row of a dataframe)
     :parma model: used for determining predicted prices change
     :return: expected price change
+    
+    will look like:
+    >>> determine_expected_price(data, load_model("model.sav"))
     """
     ## initialize the x variables (hard coded)
     x_vars = ['count','favorites','retweets','avg_sentiment',
           'sum1440_count','sum1440_favorites','sum1440_retweets','sum1440_avg_sentiment',
           'sum2880_count','sum2880_favorites','sum2880_retweets','sum2880_avg_sentiment',
           'sum4320_count','sum4320_favorites','sum4320_retweets','sum4320_avg_sentiment',
-          'Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+          'Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
     
-    return model.predict([data[x_vars]])[0]
+    return model.predict(data[x_vars])[0]
