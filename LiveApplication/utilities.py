@@ -54,7 +54,9 @@ def notification_email(sell_prices, expected_change, purchased_price, did_buy, e
    else:
       message += "\n\nNO PURCHASES\n   did not buy any bitcoin. Price at {0}\n".format(purchased_price)
 
-   send_email("Live BTC App Notification", message, email_password)
+   subject = "Live BTC App Notification - {0}".format(datetime.now().strftime("%m/%d/%Y"))
+
+   send_email(subject, message, email_password)
 
 def get_recent_tweets(search_terms, tweet_count=1000):
    # collect tweets from today until tomorrow.
