@@ -1,5 +1,7 @@
 #!/bin/bash
 
-cd DigitalCurrencies-SeniorProject/LiveApplication/
+cd ~/DigitalCurrencies-SeniorProject/LiveApplication/
 
-python application.py
+d=$(date +%Y-%m-%d)
+
+python application.py &> "runlogs/$d.log"
