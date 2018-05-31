@@ -71,13 +71,13 @@ def collect_tweets():
    results = []
 
    try:
-      results.append(got.manager.TweetManager.getTweets(todayCrit, receiveBuffer=print_tweets))
+      results += got.manager.TweetManager.getTweets(todayCrit, receiveBuffer=print_tweets)
       print "finished today"
-      results.append(got.manager.TweetManager.getTweets(yesterdayCrit, receiveBuffer=print_tweets))
+      results += got.manager.TweetManager.getTweets(yesterdayCrit, receiveBuffer=print_tweets)
       print "finished yesterday"
-      results.append(got.manager.TweetManager.getTweets(two_agoCrit, receiveBuffer=print_tweets))
+      results += got.manager.TweetManager.getTweets(two_agoCrit, receiveBuffer=print_tweets)
       print "finished 2 days ago"
-      results.append(got.manager.TweetManager.getTweets(three_days_ago, receiveBuffer=print_tweets))
+      results += got.manager.TweetManager.getTweets(three_days_ago, receiveBuffer=print_tweets)
       print "finished 3 days ago"
 
       print "SUCCESS"
