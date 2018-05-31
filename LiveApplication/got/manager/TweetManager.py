@@ -23,6 +23,9 @@ class TweetManager:
 
 		while active:
 			json = TweetManager.getJsonReponse(tweetCriteria, refreshCursor, cookieJar, proxy)
+			if json == None:
+				continue
+			
 			if len(json['items_html'].strip()) == 0:
 				break
 
@@ -156,7 +159,7 @@ class TweetManager:
 		# after three tries, give up
 		if 3 <= attempts:
 			# print prob
-			sys.exit()
+			return None
 
 		
 		dataJson = json.loads(jsonResponse)

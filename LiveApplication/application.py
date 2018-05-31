@@ -71,19 +71,35 @@ def collect_tweets():
    results = []
 
    try:
-      results += got.manager.TweetManager.getTweets(todayCrit, receiveBuffer=print_tweets)
+      day = got.manager.TweetManager.getTweets(todayCrit, receiveBuffer=print_tweets)
       print "finished today"
-      results += got.manager.TweetManager.getTweets(yesterdayCrit, receiveBuffer=print_tweets)
-      print "finished yesterday"
-      results += got.manager.TweetManager.getTweets(two_agoCrit, receiveBuffer=print_tweets)
-      print "finished 2 days ago"
-      results += got.manager.TweetManager.getTweets(three_days_ago, receiveBuffer=print_tweets)
-      print "finished 3 days ago"
-
-      print "SUCCESS"
-      print len(results)
+      results += day
    except Exception as e:
-      print "FAULURE: \n Error occured at {}\n".format(datetime.now())
+      print "FAULURE for today's tweets: \n Error occured at {}\n".format(datetime.now())
+      traceback.print_tb(sys.exc_info()[2])
+
+   try:
+      day = got.manager.TweetManager.getTweets(yesterdayCrit, receiveBuffer=print_tweets)
+      print "finished yesterday"
+      results += day
+   except Exception as e:
+      print "FAULURE for yesterday's tweets: \n Error occured at {}\n".format(datetime.now())
+      traceback.print_tb(sys.exc_info()[2])
+
+   try:
+      day = got.manager.TweetManager.getTweets(two_agoCrit, receiveBuffer=print_tweets)
+      print "finished two days ago"
+      results += day
+   except Exception as e:
+      print "FAULURE for two day ago's tweets: \n Error occured at {}\n".format(datetime.now())
+      traceback.print_tb(sys.exc_info()[2])
+
+   try:
+      day = got.manager.TweetManager.getTweets(three_agoCrit, receiveBuffer=print_tweets)
+      print "finished three_days_ago"
+      results += day
+   except Exception as e:
+      print "FAULURE for three_days_ago's tweets: \n Error occured at {}\n".format(datetime.now())
       traceback.print_tb(sys.exc_info()[2])
 
    return results
