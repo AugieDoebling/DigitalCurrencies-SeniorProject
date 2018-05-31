@@ -5,6 +5,7 @@ from modeling import *
 import peewee
 import sys
 import traceback
+import pandas as pd
 
 # get sql credentials from creds.txt
 with open("creds.txt", "r") as creds:
@@ -58,12 +59,12 @@ def print_tweets(tweets):
 def collect_tweets():
    since = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
    until = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-   tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin').setSince(since).setUntil(until)
+   tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin').setSince(since).setUntil(until).setMaxTweets(100)
 
    results = []
 
    try:
-      results = got.manager.TweetManager.getTweets(tweetCriteria)
+      results = got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer=print_tweets)
       print "SUCCESS"
       print len(results)
    except Exception as e:
@@ -75,18 +76,21 @@ def collect_tweets():
 def buy(exp_price, thresholds, amount):
    # BTC price
    btc_price = get_currency_price('BTC')
+   # did buy
+   did_buy = False
    # usd amount to btc
    purch = amount / btc_price
    # for every threshold value
    for th in thresholds:
       # if we should buy at this threshold
       if exp_price >= th:
+         did_buy = True
          # save a record of a 'purchase'
          Live_buy.create(
             threshold=th,
             expected_change=exp_price,
             purchased_btc=purch)
-   return btc_price
+   return (btc_price, did_buy)
 
 def main():
    # PARAMETERS
@@ -105,6 +109,15 @@ def main():
    
    # collect_tweets
    tweet_array = collect_tweets()
+   # save for backup
+   with open("tweet_backup.txt", 'w+') as f:
+      for t in tweet_array:
+         f.write("{0},{1},{2},{3},{4}\n".format(t.id,
+         ''.join([i if ord(i) < 128 else ' ' for i in t.text]),
+         t.date,
+         t.favorites, 
+         t.retweets))
+
    tweet_df = tweet_array_to_df(tweet_array)
 
    print "collected tweets"
@@ -117,7 +130,7 @@ def main():
    print "calculating expected change..."
 
    # load model
-   saved_model = load_model('../TwitterDataCollection/model.sav')
+   saved_model = load_model('model_python27.sav')
 
    # run variables through model
    expected_change = determine_expected_price(model_variables, saved_model)
@@ -126,13 +139,13 @@ def main():
    print "buying..."
 
    # 'buy' bitcoin according to different price thresholds
-   purchased_price = buy(expected_change, thresholds, amount_usd)
+   purchased_price, did_buy = buy(expected_change, thresholds, amount_usd)
 
    print "bought"
    print "sending email..."
 
    # notify augie via email
-   notification_email(sell_prices, expected_change, purchased_price, EMAIL_PASSWORD)
+   notification_email(sell_prices, expected_change, purchased_price, did_buy, EMAIL_PASSWORD)
 
    print "finished"
 
