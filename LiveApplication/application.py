@@ -57,14 +57,29 @@ def print_tweets(tweets):
    print "Tweets: {} CurTime: {} timestamp: {}".format(100, datetime.now(), timestamp)
 
 def collect_tweets():
-   since = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-   until = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-   tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin').setSince(since).setUntil(until)
+   three_days_ago = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
+   two_days_ago = (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%d")
+   yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+   today = (datetime.now()).strftime("%Y-%m-%d")
+   tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+
+   todayCrit = got.manager.TweetCriteria().setQuerySearch('#bitcoin').setSince(today).setUntil(tomorrow)
+   yesterdayCrit = got.manager.TweetCriteria().setQuerySearch('#bitcoin').setSince(yesterday).setUntil(today)
+   two_agoCrit = got.manager.TweetCriteria().setQuerySearch('#bitcoin').setSince(two_days_ago).setUntil(yesterday)
+   three_agoCrit = got.manager.TweetCriteria().setQuerySearch('#bitcoin').setSince(three_days_ago).setUntil(two_days_ago)
 
    results = []
 
    try:
-      results = got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer=print_tweets)
+      results.append(got.manager.TweetManager.getTweets(todayCrit, receiveBuffer=print_tweets))
+      print "finished today"
+      results.append(got.manager.TweetManager.getTweets(yesterdayCrit, receiveBuffer=print_tweets))
+      print "finished yesterday"
+      results.append(got.manager.TweetManager.getTweets(two_agoCrit, receiveBuffer=print_tweets))
+      print "finished 2 days ago"
+      results.append(got.manager.TweetManager.getTweets(three_days_ago, receiveBuffer=print_tweets))
+      print "finished 3 days ago"
+
       print "SUCCESS"
       print len(results)
    except Exception as e:
