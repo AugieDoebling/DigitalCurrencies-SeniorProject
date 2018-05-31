@@ -59,7 +59,7 @@ def print_tweets(tweets):
 def collect_tweets():
    since = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
    until = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-   tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin').setSince(since).setUntil(until).setMaxTweets(100)
+   tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#bitcoin').setSince(since).setUntil(until)
 
    results = []
 
