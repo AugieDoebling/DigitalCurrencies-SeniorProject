@@ -170,7 +170,7 @@ def main():
    print "buying..."
 
    # 'buy' bitcoin according to different price thresholds
-   purchased_price, did_buy = buy(expected_change.loc[len(expected_change) - 1], thresholds, amount_usd)
+   purchased_price, did_buy = buy(expected_change[-1], thresholds, amount_usd)
 
    print "bought"
    print "sending email..."
