@@ -156,6 +156,7 @@ def main():
    
    # calculate needed variables
    model_variables = calc_model_variables(tweet_df)
+   model_variables.to_csv('model_variables_df.csv')
 
    print "calculated variables"
    print "calculating expected change..."
@@ -170,13 +171,13 @@ def main():
    print "buying..."
 
    # 'buy' bitcoin according to different price thresholds
-   purchased_price, did_buy = buy(expected_change, thresholds, amount_usd)
+   purchased_price, did_buy = buy(expected_change.loc[len(expected_change) - 1], thresholds, amount_usd)
 
    print "bought"
    print "sending email..."
 
    # notify augie via email
-   notification_email(sell_prices, expected_change, purchased_price, did_buy, EMAIL_PASSWORD)
+   # notification_email(sell_prices, expected_change, purchased_price, did_buy, EMAIL_PASSWORD)
 
    print "finished"
 

@@ -94,4 +94,4 @@ def determine_expected_price(data, model):
 
     data = data.fillna(0)
     
-    return model.predict(data[x_vars])[0]
+    return model.predict(data[x_vars])
