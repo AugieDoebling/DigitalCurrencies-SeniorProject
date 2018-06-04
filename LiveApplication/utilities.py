@@ -33,7 +33,7 @@ def get_currency_price(currency_code):
    return float(prices['data']['rates']['USD'])
 
 def send_email(subject, message, email_password):
-   recipient = "Augie Doebling <augustdoebling@gmail.com>"
+   recipient = "Augie Doebling <augustdoebling@gmail.com>, Hans <hansschumann24@gmail.com>"
    return requests.post(
       "https://api.mailgun.net/v3/sandbox1901f3bfd2e64cb9b1e4a3ea2525a8e2.mailgun.org/messages",
       auth=("api", email_password),

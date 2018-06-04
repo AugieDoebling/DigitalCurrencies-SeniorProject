@@ -164,13 +164,13 @@ def main():
    saved_model = load_model('model_python27.sav')
 
    # run variables through model
-   expected_change = determine_expected_price(model_variables, saved_model)
+   expected_change = determine_expected_price(model_variables, saved_model)[-1]
 
    print "expected change done"
    print "buying..."
 
    # 'buy' bitcoin according to different price thresholds
-   purchased_price, did_buy = buy(expected_change[-1], thresholds, amount_usd)
+   purchased_price, did_buy = buy(expected_change, thresholds, amount_usd)
 
    print "bought"
    print "sending email..."
