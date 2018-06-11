@@ -22,6 +22,8 @@ currencies in a more efficient way than humans could.  This would result in
 profits (or marginal gains) that could be measured in a small experiment.
 
 ## What's in This Repository
+**Report** Final report on our projects. Findings and reflections reported.
+
 **Twitter** - Code used to call Twitter API to collect data. After collection, we have about 6 million data rows. We have [published this data to Kaggle.](https://kaggle.com/augiedoebling/bitcoin-tweets)
 
 **DataCleaning** - Scripts used to create a data file necessary for statistical
@@ -34,7 +36,5 @@ predict best time to purchase and sell Bitcoin. Currently the application only
 simulates the buying/selling of Bitcoin and keeps track of how much money it
 would have.
 
-*More to come as project progresses*
-
 ## Libraries Used
-**GetOldTweets-python** - [Github Project](https://github.com/Jefferson-Henrique/GetOldTweets-python)
+ [**GetOldTweets-python**](https://github.com/Jefferson-Henrique/GetOldTweets-python), **Pandas**, **Numpy**, **TextBlob**, **PeeWee**
